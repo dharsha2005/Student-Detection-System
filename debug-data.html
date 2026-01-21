@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Academic Data</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6">🔍 Debug Academic Data Storage</h1>
+        
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-xl font-semibold mb-4">Current localStorage Contents</h2>
+            <div id="localStorageContent" class="space-y-2"></div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-xl font-semibold mb-4">Test Data Storage</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Test User ID:</label>
+                    <input type="text" id="testUserId" value="1" class="border px-3 py-2 rounded w-full">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Test Data:</label>
+                    <textarea id="testData" class="border px-3 py-2 rounded w-full h-32">{
+  "major": "Computer Science",
+  "enrollment_year": 2022,
+  "attendance_percentage": 85,
+  "internal_marks": 78,
+  "assignment_scores": 82,
+  "lab_performance": 80,
+  "previous_gpa": 3.2,
+  "study_hours": 25,
+  "participation_metrics": 90
+}</textarea>
+                </div>
+                <div class="flex space-x-2">
+                    <button onclick="saveTestData()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        Save Test Data
+                    </button>
+                    <button onclick="loadTestData()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                        Load Test Data
+                    </button>
+                    <button onclick="clearAllData()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                        Clear All Data
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold mb-4">Debug Info</h2>
+            <div id="debugInfo" class="text-sm space-y-1"></div>
+        </div>
+    </div>
+
+    <script>
+        function updateLocalStorageDisplay() {
+            const content = document.getElementById('localStorageContent');
+            const debugInfo = document.getElementById('debugInfo');
+            
+            let html = '';
+            let debug = '';
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                
+                html += `<div class="p-2 border rounded">`;
+                html += `<strong>Key:</strong> ${key}<br>`;
+                html += `<strong>Value:</strong> <pre class="text-xs bg-gray-100 p-2 rounded mt-1">${value}</pre>`;
+                html += `</div>`;
+                
+                debug += `${key}: ${value.length} chars<br>`;
+            }
+            
+            content.innerHTML = html || '<p class="text-gray-500">No data in localStorage</p>';
+            debugInfo.innerHTML = debug || '<p class="text-gray-500">No debug info</p>';
+        }
+
+        function saveTestData() {
+            const userId = document.getElementById('testUserId').value;
+            const data = document.getElementById('testData').value;
+            
+            try {
+                const parsedData = JSON.parse(data);
+                localStorage.setItem(`academic_${userId}`, JSON.stringify(parsedData));
+                localStorage.setItem('user', JSON.stringify({
+                    id: parseInt(userId),
+                    name: 'Test User',
+                    email: 'test@example.com'
+                }));
+                alert('Test data saved successfully!');
+                updateLocalStorageDisplay();
+            } catch (error) {
+                alert('Error saving data: ' + error.message);
+            }
+        }
+
+        function loadTestData() {
+            const userId = document.getElementById('testUserId').value;
+            const data = localStorage.getItem(`academic_${userId}`);
+            
+            if (data) {
+                document.getElementById('testData').value = data;
+                alert('Test data loaded successfully!');
+            } else {
+                alert('No data found for user ' + userId);
+            }
+        }
+
+        function clearAllData() {
+            if (confirm('Are you sure you want to clear all localStorage data?')) {
+                localStorage.clear();
+                updateLocalStorageDisplay();
+                alert('All data cleared!');
+            }
+        }
+
+        // Update display on page load
+        updateLocalStorageDisplay();
+        
+        // Update display every 2 seconds to catch changes
+        setInterval(updateLocalStorageDisplay, 2000);
+    </script>
+</body>
+</html>

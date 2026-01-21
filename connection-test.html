@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Connection Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6">🔍 System Connection Test</h1>
+        
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-xl font-semibold mb-4">Service Status</h2>
+            <div id="serviceStatus" class="space-y-2">
+                <div class="flex justify-between items-center p-2 border rounded">
+                    <span>Frontend (Port 3000):</span>
+                    <span id="frontendStatus" class="px-2 py-1 rounded text-sm">Testing...</span>
+                </div>
+                <div class="flex justify-between items-center p-2 border rounded">
+                    <span>Backend API (Port 8000):</span>
+                    <span id="backendStatus" class="px-2 py-1 rounded text-sm">Testing...</span>
+                </div>
+                <div class="flex justify-between items-center p-2 border rounded">
+                    <span>ML Service (Port 8001):</span>
+                    <span id="mlStatus" class="px-2 py-1 rounded text-sm">Testing...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-xl font-semibold mb-4">API Endpoint Tests</h2>
+            <div id="apiTests" class="space-y-2">
+                <div class="flex justify-between items-center p-2 border rounded">
+                    <span>GET /health:</span>
+                    <span id="healthTest" class="px-2 py-1 rounded text-sm">Testing...</span>
+                </div>
+                <div class="flex justify-between items-center p-2 border rounded">
+                    <span>GET /api/students/1:</span>
+                    <span id="studentsTest" class="px-2 py-1 rounded text-sm">Testing...</span>
+                </div>
+                <div class="flex justify-between items-center p-2 border rounded">
+                    <span>GET /api/predictions/history/1:</span>
+                    <span id="predictionsTest" class="px-2 py-1 rounded text-sm">Testing...</span>
+                </div>
+                <div class="flex justify-between items-center p-2 border rounded">
+                    <span>POST /api/predictions/predict:</span>
+                    <span id="predictTest" class="px-2 py-1 rounded text-sm">Testing...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-xl font-semibold mb-4">Test Results</h2>
+            <div id="results" class="space-y-4">
+                <div class="p-4 bg-gray-50 rounded">
+                    <h3 class="font-semibold mb-2">Connection Summary</h3>
+                    <div id="summary" class="text-sm">Running tests...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-blue-50 border border-blue-200 p-6 rounded-lg">
+            <h2 class="text-xl font-semibold mb-4 text-blue-800">📋 Manual Test Steps</h2>
+            <ol class="list-decimal list-inside space-y-2 text-sm">
+                <li>Open <a href="http://localhost:3000" target="_blank" class="text-blue-600 underline">http://localhost:3000</a></li>
+                <li>Click "Sign Up" and create an account</li>
+                <li>Click "Add Academic Details" and fill in your information</li>
+                <li>Go to Profile and click "Generate New Prediction"</li>
+                <li>Check if predictions appear with your data</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        const results = {
+            frontend: false,
+            backend: false,
+            mlService: false,
+            health: false,
+            students: false,
+            predictions: false,
+            predict: false
+        };
+
+        async function testConnection() {
+            // Test Frontend
+            try {
+                const response = await fetch('http://localhost:3000');
+                results.frontend = response.ok;
+                updateStatus('frontendStatus', results.frontend);
+            } catch (error) {
+                updateStatus('frontendStatus', false);
+            }
+
+            // Test Backend Health
+            try {
+                const response = await fetch('http://localhost:8000/health');
+                const data = await response.json();
+                results.health = response.ok && data.status === 'healthy';
+                results.backend = results.health;
+                updateStatus('backendStatus', results.backend);
+                updateStatus('healthTest', results.health);
+            } catch (error) {
+                updateStatus('backendStatus', false);
+                updateStatus('healthTest', false);
+            }
+
+            // Test ML Service
+            try {
+                const response = await fetch('http://localhost:8001/health');
+                const data = await response.json();
+                results.mlService = response.ok && data.status === 'healthy';
+                updateStatus('mlStatus', results.mlService);
+            } catch (error) {
+                updateStatus('mlStatus', false);
+            }
+
+            // Test Students API
+            try {
+                const response = await fetch('http://localhost:8000/api/students/1');
+                results.students = response.ok;
+                updateStatus('studentsTest', results.students);
+            } catch (error) {
+                updateStatus('studentsTest', false);
+            }
+
+            // Test Predictions API
+            try {
+                const response = await fetch('http://localhost:8000/api/predictions/history/1');
+                results.predictions = response.ok;
+                updateStatus('predictionsTest', results.predictions);
+            } catch (error) {
+                updateStatus('predictionsTest', false);
+            }
+
+            // Test Prediction API
+            try {
+                const response = await fetch('http://localhost:8000/api/predictions/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        student_id: 1,
+                        attendance_percentage: 85,
+                        internal_marks: 78,
+                        assignment_scores: 82,
+                        lab_performance: 80,
+                        previous_gpa: 3.2,
+                        study_hours: 25,
+                        participation_metrics: 90,
+                        socio_academic_factors: '{"family_income": "medium", "parent_education": "college"}'
+                    })
+                });
+                results.predict = response.ok;
+                updateStatus('predictTest', results.predict);
+            } catch (error) {
+                updateStatus('predictTest', false);
+            }
+
+            updateSummary();
+        }
+
+        function updateStatus(elementId, success) {
+            const element = document.getElementById(elementId);
+            if (success) {
+                element.className = 'px-2 py-1 rounded text-sm bg-green-100 text-green-800';
+                element.textContent = '✅ Connected';
+            } else {
+                element.className = 'px-2 py-1 rounded text-sm bg-red-100 text-red-800';
+                element.textContent = '❌ Failed';
+            }
+        }
+
+        function updateSummary() {
+            const totalTests = Object.keys(results).length;
+            const passedTests = Object.values(results).filter(r => r).length;
+            const summary = document.getElementById('summary');
+            
+            if (passedTests === totalTests) {
+                summary.innerHTML = `
+                    <div class="text-green-600 font-semibold">✅ All connections working!</div>
+                    <div class="text-sm mt-2">Your frontend and backend are properly connected.</div>
+                `;
+            } else {
+                summary.innerHTML = `
+                    <div class="text-red-600 font-semibold">❌ Some connections failed</div>
+                    <div class="text-sm mt-2">Passed: ${passedTests}/${totalTests} tests</div>
+                    <div class="text-sm mt-1">Check the failed services above.</div>
+                `;
+            }
+        }
+
+        // Run tests when page loads
+        testConnection();
+    </script>
+</body>
+</html>
