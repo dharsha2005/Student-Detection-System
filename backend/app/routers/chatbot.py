@@ -208,9 +208,6 @@ Answer briefly in bullet points.
 
 chatbot = ChatbotService()
 
-# =========================
-# API ROUTE
-# =========================
 @router.post("/chat", response_model=ChatResponse)
 async def chat(message: ChatMessage):
     user = await get_current_user_chat(message.user_email)
